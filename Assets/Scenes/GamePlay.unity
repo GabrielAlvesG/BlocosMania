@@ -225,7 +225,7 @@ Camera:
   far clip plane: 1000
   field of view: 34
   orthographic: 1
-  orthographic size: 6
+  orthographic size: 11
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -250,7 +250,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5, y: 5, z: -10}
+  m_LocalPosition: {x: 5, y: 10, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -286,8 +286,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e859b166385020f4889e93735af101cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GerenciadorGrid
-  LarguraGrid: 5
-  AlturaGrid: 10
+  LarguraGrid: 10
+  AlturaGrid: 20
 --- !u!4 &540580260
 Transform:
   m_ObjectHideFlags: 0
@@ -315,7 +315,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f53caa8d1e708bb49b78607fec7deed3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GeradorDeBlocos
-  prefabBloco: {fileID: 2739197656371014207, guid: 8326a96d54fce9c428f01881098fb578, type: 3}
+  prefabsPecas:
+  - {fileID: 1379396548450030941, guid: 1560cf3d8e1b4c844847d5384ae25e42, type: 3}
+  - {fileID: 6518741181865424579, guid: db65238d83cea1140812665832f6e4cc, type: 3}
+  - {fileID: 2309076752339875505, guid: c9bb900d2660f58499edc277fc0f9ab9, type: 3}
+  - {fileID: 1310044969120739862, guid: 163789ffa4f93fb4aa4f5abf59bb66d5, type: 3}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0

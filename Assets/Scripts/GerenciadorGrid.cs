@@ -1,9 +1,9 @@
+using System.Collections;
 using UnityEngine;
 
 
 public class GerenciadorGrid : MonoBehaviour
 {
-
     #region Variaveis
 
     [Header("Configurações do Grid")]
@@ -19,6 +19,7 @@ public class GerenciadorGrid : MonoBehaviour
     #endregion
 
     #region Ciclo
+
     void Awake()
     {
         jogoAtivo = true; // Reinicia o estado ao começar o jogo
@@ -26,13 +27,14 @@ public class GerenciadorGrid : MonoBehaviour
         SincronizarConfiguracoes();
         grid = new Transform[largura, altura];
     }
-    private void OnValidate()
+
+    void OnValidate()
     {
         SincronizarConfiguracoes();
         ConfigurarCamera();
     }
 
-    private void OnDrawGizmos()
+    void OnDrawGizmos()
     {
         // Define a cor das linhas (Cyan/Azul Piscina neste exemplo)
         Gizmos.color = Color.cyan;
@@ -54,7 +56,7 @@ public class GerenciadorGrid : MonoBehaviour
 
     #region Funcoes
 
-    //---- Privados ----//
+    //---- Config ----//
 
     void SincronizarConfiguracoes()
     {
@@ -64,27 +66,130 @@ public class GerenciadorGrid : MonoBehaviour
 
     //---- Validadores ----//
 
-    // Verifica se o bloco está dentro dos limites e se não bateu em outro bloco
     public static bool VerificarPosicao(int x, int y)
     {
+        // Verifica se o bloco está dentro dos limites e se não bateu em outro bloco
+
         if (x < 0 || x >= largura || y < 0) return false;
         if (y < altura && grid[x, y] != null) return false;
 
         return true;
     }
 
-    //Fixa o bloco no grid, tornando-o parte do grid e não mais móvel
-    public static void FixarBlocoNoGrid(BlocoGrid bloco)
+    public static void FixarPecaNoGrid(Transform paiDaPeca)
     {
-        int x = Mathf.RoundToInt(bloco.transform.position.x);
-        int y = Mathf.RoundToInt(bloco.transform.position.y);
-        if (y < altura && x >= 0 && x < largura)
+        // Cria uma lista temporária para não dar erro ao mudar o parentesco dos filhos em tempo real
+        System.Collections.Generic.List<Transform> filhos = new System.Collections.Generic.List<Transform>();
+        foreach (Transform filho in paiDaPeca) filhos.Add(filho);
+
+        foreach (Transform filho in filhos)
         {
-            grid[x, y] = bloco.transform;
+            int x = Mathf.FloorToInt(filho.position.x);
+            int y = Mathf.FloorToInt(filho.position.y);
+
+            // Força a posição visual de cada bloquinho a travar no grid de forma absoluta
+            filho.position = new Vector3(x + 0.5f, y + 0.5f, 0f);
+
+            if (y >= 0 && y < altura && x >= 0 && x < largura)
+            {
+                grid[x, y] = filho;
+            }
+
+            // Desacopla o bloco do objeto Pai para que ele vire um bloco independente no cenário
+            filho.parent = null;
+        }
+
+        // Faz a varredura se alguma linha completou
+        FindAnyObjectByType<GerenciadorGrid>().IniciarChecagemDeLinhas();
+    }
+
+    void IniciarChecagemDeLinhas()
+    {
+        //Inicia a rotina de checagem de linhas completas com efeito visual
+        StartCoroutine(ChecarLinhasCompletasRotina());
+    }
+
+    private IEnumerator ChecarLinhasCompletasRotina()
+    {
+        for (int y = 0; y < altura; y++)
+        {
+            if (LinhaEstaCheia(y))
+            {
+                // 1. Deixa os blocos transparentes/ocultos primeiro para dar o efeito de "sumir"
+                EsconderLinhaVisualmente(y);
+
+                // 2. Espera 0.15 segundos (o jogador vai ver a linha desaparecer!)
+                yield return new WaitForSeconds(0.15f);
+
+                // 3. Agora sim, apaga os objetos da memória e derruba quem estava em cima
+                ApagarLinha(y);
+                DerrubarLinhasSuperiores(y + 1);
+
+                // Recheca a mesma linha pois tudo desceu
+                y--;
+            }
         }
     }
 
-    public static void AtualizarGrid(BlocoGrid bloco) { }
+    private static void EsconderLinhaVisualmente(int y)
+    {
+        //TODO: Adicionar animação para os blocos sumirem, por enquanto apenas desativa o GameObject
+        // Deixa os blocos invisíveis temporariamente
+        for (int x = 0; x < largura; x++)
+        {
+            if (grid[x, y] != null)
+            {
+                grid[x, y].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private static bool LinhaEstaCheia(int y)
+    {
+        // Se encontrar qualquer espaço vazio na horizontal, a linha não está cheia
+        for (int x = 0; x < largura; x++)
+        {
+            if (grid[x, y] == null)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static void ApagarLinha(int y)
+    {
+        for (int x = 0; x < largura; x++)
+        {
+            if (grid[x, y] != null)
+            {
+                // Destrói o quadradinho visual no Unity
+                Destroy(grid[x, y].gameObject);
+                // Limpa o registro na nossa matriz matemática
+                grid[x, y] = null;
+            }
+        }
+    }
+
+    private static void DerrubarLinhasSuperiores(int linhaInicialY)
+    {
+        // Varre todas as linhas acima da que foi apagada
+        for (int y = linhaInicialY; y < altura; y++)
+        {
+            for (int x = 0; x < largura; x++)
+            {
+                if (grid[x, y] != null)
+                {
+                    // Move o dado na matriz matemática para uma linha abaixo
+                    grid[x, y - 1] = grid[x, y];
+                    grid[x, y] = null;
+
+                    // Move visualmente o objeto físico do bloco 1 unidade para baixo
+                    grid[x, y - 1].position += new Vector3(0, -1, 0);
+                }
+            }
+        }
+    }
 
     //---- Camera ----//
 
