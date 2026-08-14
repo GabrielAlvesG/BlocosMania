@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 
-
 public class GerenciadorGrid : MonoBehaviour
 {
     #region Variaveis
@@ -10,11 +9,13 @@ public class GerenciadorGrid : MonoBehaviour
     public int LarguraGrid = 10;
     public int AlturaGrid = 20;
 
+
+    [Header("Configuracoes UI")]
+    public SpriteRenderer spriteFundo;
+
     public static int largura = 10;
     public static int altura = 20;
     public static Transform[,] grid;
-
-    public static bool jogoAtivo = true;
 
     #endregion
 
@@ -22,8 +23,6 @@ public class GerenciadorGrid : MonoBehaviour
 
     void Awake()
     {
-        jogoAtivo = true; // Reinicia o estado ao começar o jogo
-
         SincronizarConfiguracoes();
         grid = new Transform[largura, altura];
     }
@@ -32,6 +31,7 @@ public class GerenciadorGrid : MonoBehaviour
     {
         SincronizarConfiguracoes();
         ConfigurarCamera();
+        ConfigurarFundo();
     }
 
     void OnDrawGizmos()
@@ -111,6 +111,8 @@ public class GerenciadorGrid : MonoBehaviour
 
     private IEnumerator ChecarLinhasCompletasRotina()
     {
+        int linhasDestruidasNessaPeca = 0;
+
         for (int y = 0; y < altura; y++)
         {
             if (LinhaEstaCheia(y))
@@ -124,10 +126,17 @@ public class GerenciadorGrid : MonoBehaviour
                 // 3. Agora sim, apaga os objetos da memória e derruba quem estava em cima
                 ApagarLinha(y);
                 DerrubarLinhasSuperiores(y + 1);
+                linhasDestruidasNessaPeca++;//Adiciona 1 ponto na contagem de linhas destruídas nessa peça
 
                 // Recheca a mesma linha pois tudo desceu
                 y--;
             }
+        }
+
+        //Se destruiu linhas, adiciona pontos na pontuação do jogador
+        if (linhasDestruidasNessaPeca > 0 && GerenciadorJogo.Instancia != null)
+        {
+            GerenciadorJogo.Instancia.AdicionarPontos(linhasDestruidasNessaPeca);
         }
     }
 
@@ -208,6 +217,26 @@ public class GerenciadorGrid : MonoBehaviour
         // Ajusta o tamanho do zoom com uma pequena margem (+1)
         cam.orthographic = true;
         cam.orthographicSize = (AlturaGrid / 2f) + 1f;
+    }
+
+    //---- UI ----//
+
+    void ConfigurarFundo()
+    {
+        if (spriteFundo == null) return;
+
+        // 1. Força o modo de desenho para Tiled (Ladrilhado)
+        spriteFundo.drawMode = SpriteDrawMode.Tiled;
+
+        // 2. Define o tamanho do fundo exatamente igual à largura e altura do Grid
+        spriteFundo.size = new Vector2(largura, altura);
+
+        // 3. Posiciona o fundo no centro exato da grade azul
+        float centroX = largura / 2f;
+        float centroY = altura / 2f;
+
+        // Mantemos o Z em 1f (positivo) para garantir que o fundo fique ATRÁS das peças que caem (Z = 0)
+        spriteFundo.transform.position = new Vector3(centroX, centroY, 1f);
     }
 
     #endregion

@@ -6,7 +6,7 @@ public class PecaGrid : MonoBehaviour
     #region Variaveis
 
     private float tempoUltimoPasso;
-    public float tempoPorPasso = 0.8f;
+    private float tempoPorPasso = 0.8f;
 
     #endregion
 
@@ -16,18 +16,19 @@ public class PecaGrid : MonoBehaviour
     {
         tempoUltimoPasso = Time.time;
 
+        tempoPorPasso = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
+
         // Se nascer em posição inválida de cara, é GameOver imediato
         if (!PosicaoValida())
         {
-            GerenciadorGrid.jogoAtivo = false;
-            Debug.LogWarning("🚨 GAMEOVER! O topo encheu.");
+            GerenciadorJogo.Instancia.FinalizarJogo();
             Destroy(gameObject);
         }
     }
 
     void Update()
     {
-        if (!GerenciadorGrid.jogoAtivo) return;
+        if (!GerenciadorJogo.Instancia.jogoAtivo) return;
 
         // Queda Automática
         if (Time.time - tempoUltimoPasso >= tempoPorPasso)

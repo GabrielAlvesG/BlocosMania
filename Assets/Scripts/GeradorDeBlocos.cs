@@ -10,21 +10,11 @@ public class GeradorDeBlocos : MonoBehaviour
 
     #endregion
 
-    #region Ciclo
-
-    private void Start()
-    {
-        //TODO: Remover apos criar um timer para iniciar o game!!!
-        CriarBloco();
-    }
-
-    #endregion
-
     #region Funcoes
 
     public void CriarBloco()
     {
-        if (!GerenciadorGrid.jogoAtivo) return;
+        if (!GerenciadorJogo.Instancia.jogoAtivo) return;
 
         // Se nao tiver prefabs de peças, exibe erro no console e retorna
         if (prefabsPecas == null || prefabsPecas.Length == 0)
