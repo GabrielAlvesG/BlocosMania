@@ -13,6 +13,8 @@ public class GerenciadorJogo : MonoBehaviour
 
     [Header("Interface do Usuário (UI)")]
     public TextMeshProUGUI textoPontuacao;
+    public TextMeshProUGUI textoNivel;
+    public TextMeshProUGUI textoTempoJogo;
 
     [Header("Configurações de Nível e Velocidade")]
     [Tooltip("Velocidade do Nível 1 (segundos por passo)")]
@@ -32,6 +34,9 @@ public class GerenciadorJogo : MonoBehaviour
     private float velocidadeGlobalAtual;
     private int nivelAtual = 1;
     private float cronometroNivel;
+    private float tempoJogoTotal;
+    private float cronometroAtualizacaoUi;
+    private const float IntervaloAtualizacaoUi = 0.25f;
 
     #endregion
 
@@ -60,13 +65,21 @@ public class GerenciadorJogo : MonoBehaviour
     {
         if (!jogoAtivo) return;
 
-        // Avança o cronômetro do nível atual
+        // Avança o cronômetro do nível atual e o tempo total de jogo
         cronometroNivel += Time.deltaTime;
+        tempoJogoTotal += Time.deltaTime;
 
         // Se o tempo do nível estourou, sobe de nível!
         if (cronometroNivel >= tempoPorNivel)
         {
             SubirDeNivel();
+        }
+
+        cronometroAtualizacaoUi += Time.deltaTime;
+        if (cronometroAtualizacaoUi >= IntervaloAtualizacaoUi)
+        {
+            cronometroAtualizacaoUi = 0f;
+            AtualizarTextoVisual();
         }
     }
 
@@ -80,6 +93,8 @@ public class GerenciadorJogo : MonoBehaviour
         pontuacaoAtual = 0;
         nivelAtual = 1;
         cronometroNivel = 0f;
+        tempoJogoTotal = 0f;
+        cronometroAtualizacaoUi = 0f;
 
         velocidadeGlobalAtual = velocidadeInicial;
 
@@ -115,6 +130,16 @@ public class GerenciadorJogo : MonoBehaviour
         return velocidadeGlobalAtual;
     }
 
+    public int ObterNivelAtual()
+    {
+        return nivelAtual;
+    }
+
+    public float ObterTempoJogo()
+    {
+        return tempoJogoTotal;
+    }
+
     public void AdicionarPontos(int quantidadeLinhas)
     {
         if (!jogoAtivo) return;
@@ -134,9 +159,19 @@ public class GerenciadorJogo : MonoBehaviour
         jogoAtivo = false;
         Debug.LogWarning("🚨 GAMEOVER! GerenciadorDeJogo interrompeu a partida.");
 
+        if (textoNivel != null)
+        {
+            textoNivel.text = $"NÍVEL {nivelAtual}";
+        }
+
+        if (textoTempoJogo != null)
+        {
+            textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
+        }
+
         if (textoPontuacao != null)
         {
-            textoPontuacao.text = "GAME OVER\n" + pontuacaoAtual.ToString("D5");
+            textoPontuacao.text = $"GAME OVER\nTEMPO {FormatarTempo(tempoJogoTotal)}\n{pontuacaoAtual.ToString("D5")}";
         }
     }
 
@@ -152,10 +187,34 @@ public class GerenciadorJogo : MonoBehaviour
 
     void AtualizarTextoVisual()
     {
+        if (textoNivel != null)
+        {
+            textoNivel.text = $"NÍVEL {nivelAtual}";
+        }
+
+        if (textoTempoJogo != null)
+        {
+            textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
+        }
+
         if (textoPontuacao != null)
         {
-            textoPontuacao.text = "PONTOS\n" + pontuacaoAtual.ToString("D5");
+            if (textoNivel == null && textoTempoJogo == null)
+            {
+                textoPontuacao.text = $"NÍVEL {nivelAtual}\nTEMPO {FormatarTempo(tempoJogoTotal)}\nPONTOS {pontuacaoAtual.ToString("D5")}";
+            }
+            else
+            {
+                textoPontuacao.text = "PONTOS\n" + pontuacaoAtual.ToString("D5");
+            }
         }
+    }
+
+    string FormatarTempo(float segundos)
+    {
+        int minutos = Mathf.FloorToInt(segundos / 60f);
+        int segs = Mathf.FloorToInt(segundos % 60f);
+        return $"{minutos:D2}:{segs:D2}";
     }
 
     #endregion
