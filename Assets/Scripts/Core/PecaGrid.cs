@@ -28,7 +28,7 @@ public class PecaGrid : MonoBehaviour
 
     void Update()
     {
-        if (!GerenciadorJogo.Instancia.jogoAtivo) return;
+        if (!GerenciadorJogo.Instancia.jogoAtivo || GerenciadorJogo.Instancia.jogoPausado) return;
 
         // Queda Automática
         if (Time.time - tempoUltimoPasso >= tempoPorPasso)

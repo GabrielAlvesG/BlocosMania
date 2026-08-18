@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GerenciadorJogo : MonoBehaviour
 {
@@ -10,11 +11,26 @@ public class GerenciadorJogo : MonoBehaviour
 
     [Header("Estados do Jogo")]
     public bool jogoAtivo = true;
+    public bool jogoPausado = false;
 
     [Header("Interface do Usuário (UI)")]
-    public TextMeshProUGUI textoPontuacao;
-    public TextMeshProUGUI textoNivel;
-    public TextMeshProUGUI textoTempoJogo;
+
+    //Paineis flutuantes
+
+    [Header("HUD Game")]
+    public GameObject HUD;
+    public TextMeshProUGUI HUD_textoPontuacao;
+    public TextMeshProUGUI HUD_textoNivel;
+    public TextMeshProUGUI HUD_textoTempoJogo;
+
+    [Header("Pause")]
+    public GameObject painelPause;
+
+    [Header("Game Over")]
+    public GameObject painelGameover;
+    public TextMeshProUGUI GameOver_textoPontuacao;
+    public TextMeshProUGUI GameOver_textoNivel;
+    public TextMeshProUGUI GameOver_textoTempoJogo;
 
     [Header("Configurações de Nível e Velocidade")]
     [Tooltip("Velocidade do Nível 1 (segundos por passo)")]
@@ -26,11 +42,10 @@ public class GerenciadorJogo : MonoBehaviour
     [Tooltip("Tempo em segundos para subir de nível (ex: a cada 30 segundos)")]
     public float tempoPorNivel = 30f;
 
+    // Variáveis de controle interno
 
     private int pontuacaoAtual = 0;
 
-
-    // Variáveis de controle interno
     private float velocidadeGlobalAtual;
     private int nivelAtual = 1;
     private float cronometroNivel;
@@ -65,6 +80,22 @@ public class GerenciadorJogo : MonoBehaviour
     {
         if (!jogoAtivo) return;
 
+        var teclado = Keyboard.current;
+        if (teclado != null && (teclado.escapeKey.wasPressedThisFrame || teclado.pKey.wasPressedThisFrame)) //ESC ou P para pausar/despausar
+        {
+            if (jogoPausado)
+            {
+                DespausarJogo();
+            }
+            else
+            {
+                PausarJogo();
+            }
+        }
+
+        // Se estiver pausado, impede que o cronômetro do nível continue correndo
+        if (jogoPausado) return;
+
         // Avança o cronômetro do nível atual e o tempo total de jogo
         cronometroNivel += Time.deltaTime;
         tempoJogoTotal += Time.deltaTime;
@@ -87,8 +118,16 @@ public class GerenciadorJogo : MonoBehaviour
 
     #region Funcoes
 
+    //---- Funcoes de controle ----//
+
     void IniciarNovoJogo()
     {
+        Time.timeScale = 1f; // Garante que o tempo está normal ao começar/reiniciar
+
+        //Esconde os paineis
+        if (painelPause != null) painelPause.SetActive(false);
+        if (painelGameover != null) painelGameover.SetActive(false);
+
         jogoAtivo = true;
         pontuacaoAtual = 0;
         nivelAtual = 1;
@@ -100,8 +139,87 @@ public class GerenciadorJogo : MonoBehaviour
 
         AtualizarTextoVisual();
 
-        //TODO: trocar pela animacao de inicio do jogo, com contagem regressiva
-        DispararPrimeiroBloco();
+        Invoke(nameof(DispararPrimeiroBloco), 2f /*tempo anim contDown*/);
+    }
+
+    public void PausarJogo()
+    {
+        jogoPausado = true;
+        Time.timeScale = 0f; // Congela o tempo do Unity (para tudo!)
+
+        if (painelPause != null)
+        {
+            painelPause.SetActive(true); // Mostra o menu na tela
+        }
+    }
+
+    public void DespausarJogo()
+    {
+        jogoPausado = false;
+        Time.timeScale = 1f; // Faz o tempo voltar ao normal
+
+        if (painelPause != null)
+        {
+            painelPause.SetActive(false); // Esconde o menu da tela
+        }
+    }
+
+    public void FinalizarJogo()
+    {
+        if (!jogoAtivo) return;
+
+        Debug.LogWarning("🚨 GAMEOVER! GerenciadorDeJogo interrompeu a partida.");
+
+        jogoAtivo = false;
+        Time.timeScale = 0f; // Congela tempo
+
+        if (HUD != null) //Esconde o HUD de jogo
+            HUD.SetActive(false);
+
+        if (painelGameover != null) //Exibe o painel de GameOver
+            painelGameover.SetActive(true);
+
+        //Carrega os textos finais de GameOver
+
+
+
+        if (GameOver_textoNivel != null)
+        {
+            GameOver_textoNivel.text = $"NÍVEL {nivelAtual}";
+        }
+
+        if (GameOver_textoTempoJogo != null)
+        {
+            GameOver_textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
+        }
+
+        if (GameOver_textoPontuacao != null)
+        {
+            GameOver_textoPontuacao.text = $"PONTOS {pontuacaoAtual.ToString("D5")}";
+        }
+
+    }
+
+    public void ReiniciarJogo()
+    {
+        GerenciadorCenas.Instancia.RecarregarCenaAtual();
+    }
+
+    public void MenuPrincipal()
+    {
+        GerenciadorCenas.Instancia.CarregarMenu();
+    }
+
+    //---- Funcoes de jogo ----//
+
+    void DispararPrimeiroBloco()
+    {
+        // Procura o gerador na cena e manda ele criar o bloco
+        GeradorDeBlocos gerador = FindAnyObjectByType<GeradorDeBlocos>();
+        if (gerador != null)
+        {
+            gerador.CriarBloco();
+        }
     }
 
     void SubirDeNivel()
@@ -152,61 +270,23 @@ public class GerenciadorJogo : MonoBehaviour
         AtualizarTextoVisual();
     }
 
-    public void FinalizarJogo()
-    {
-        if (!jogoAtivo) return;
-
-        jogoAtivo = false;
-        Debug.LogWarning("🚨 GAMEOVER! GerenciadorDeJogo interrompeu a partida.");
-
-        if (textoNivel != null)
-        {
-            textoNivel.text = $"NÍVEL {nivelAtual}";
-        }
-
-        if (textoTempoJogo != null)
-        {
-            textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
-        }
-
-        if (textoPontuacao != null)
-        {
-            textoPontuacao.text = $"GAME OVER\nTEMPO {FormatarTempo(tempoJogoTotal)}\n{pontuacaoAtual.ToString("D5")}";
-        }
-    }
-
-    void DispararPrimeiroBloco()
-    {
-        // Procura o gerador na cena e manda ele criar o bloco
-        GeradorDeBlocos gerador = FindAnyObjectByType<GeradorDeBlocos>();
-        if (gerador != null)
-        {
-            gerador.CriarBloco();
-        }
-    }
+    //---- Funcoes de UI ----//
 
     void AtualizarTextoVisual()
     {
-        if (textoNivel != null)
+        if (HUD_textoNivel != null)
         {
-            textoNivel.text = $"NÍVEL {nivelAtual}";
+            HUD_textoNivel.text = $"NÍVEL {nivelAtual}";
         }
 
-        if (textoTempoJogo != null)
+        if (HUD_textoTempoJogo != null)
         {
-            textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
+            HUD_textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
         }
 
-        if (textoPontuacao != null)
+        if (HUD_textoPontuacao != null)
         {
-            if (textoNivel == null && textoTempoJogo == null)
-            {
-                textoPontuacao.text = $"NÍVEL {nivelAtual}\nTEMPO {FormatarTempo(tempoJogoTotal)}\nPONTOS {pontuacaoAtual.ToString("D5")}";
-            }
-            else
-            {
-                textoPontuacao.text = "PONTOS\n" + pontuacaoAtual.ToString("D5");
-            }
+            HUD_textoPontuacao.text = "PONTOS\n" + pontuacaoAtual.ToString("D5");
         }
     }
 

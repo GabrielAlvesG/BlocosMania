@@ -223,6 +223,7 @@ public class GerenciadorGrid : MonoBehaviour
 
     void ConfigurarFundo()
     {
+
         if (spriteFundo == null) return;
 
         // 1. Força o modo de desenho para Tiled (Ladrilhado)
