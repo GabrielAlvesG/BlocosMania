@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GerenciadorGrid : MonoBehaviour
@@ -12,6 +13,13 @@ public class GerenciadorGrid : MonoBehaviour
 
     [Header("Configuracoes UI")]
     public SpriteRenderer spriteFundo;
+
+    [Header("Ajustes de Câmera")]
+    [Tooltip("Margem extra nas laterais para caber a UI (Valores maiores afastam a câmera para os lados)")]
+    public float margemLateralExtra = 4.0f; 
+    [Tooltip("Espaço extra que você quer abrir no topo da tela (valores maiores sobem a câmera)")]
+    public float espacoExtraNoTopo = 3.0f;
+
 
     public static int largura = 10;
     public static int altura = 20;
@@ -64,23 +72,16 @@ public class GerenciadorGrid : MonoBehaviour
         altura = AlturaGrid;
     }
 
-    //---- Validadores ----//
-
-    public static bool VerificarPosicao(int x, int y)
-    {
-        // Verifica se o bloco está dentro dos limites e se não bateu em outro bloco
-
-        if (x < 0 || x >= largura || y < 0) return false;
-        if (y < altura && grid[x, y] != null) return false;
-
-        return true;
-    }
+    //---- Controladores ----//
 
     public static void FixarPecaNoGrid(Transform paiDaPeca)
     {
         // Cria uma lista temporária para não dar erro ao mudar o parentesco dos filhos em tempo real
         System.Collections.Generic.List<Transform> filhos = new System.Collections.Generic.List<Transform>();
         foreach (Transform filho in paiDaPeca) filhos.Add(filho);
+
+        //// Guarda as bombas encontradas para ativá-las depois que todos os blocos estiverem salvos na matriz
+        //List<BlocoBomba> bombasParaAtivar = new List<BlocoBomba>();
 
         foreach (Transform filho in filhos)
         {
@@ -93,14 +94,94 @@ public class GerenciadorGrid : MonoBehaviour
             if (y >= 0 && y < altura && x >= 0 && x < largura)
             {
                 grid[x, y] = filho;
+
+                //if (filho.TryGetComponent<BlocoBomba>(out BlocoBomba bomba)) //se bomba guardamos para ativar
+                //{
+                //    bombasParaAtivar.Add(bomba);
+                //}
             }
 
             // Desacopla o bloco do objeto Pai para que ele vire um bloco independente no cenário
             filho.parent = null;
         }
 
+        //// Ativa todas as bombas que acabaram de pousar
+        //foreach (BlocoBomba bomba in bombasParaAtivar)
+        //{
+        //    bomba.AtivarBomba();
+        //}
+
         // Faz a varredura se alguma linha completou
         FindAnyObjectByType<GerenciadorGrid>().IniciarChecagemDeLinhas();
+    }
+
+    private static void ApagarLinha(int y)
+    {
+        for (int x = 0; x < largura; x++)
+        {
+            if (grid[x, y] != null)
+            {
+                // Destrói o quadradinho visual no Unity
+                Destroy(grid[x, y].gameObject);
+                // Limpa o registro na nossa matriz matemática
+                grid[x, y] = null;
+            }
+        }
+    }
+
+    private static void EsconderLinhaVisualmente(int y)
+    {
+        //TODO: Adicionar animação para os blocos sumirem, por enquanto apenas desativa o GameObject
+        // Deixa os blocos invisíveis temporariamente
+        for (int x = 0; x < largura; x++)
+        {
+            if (grid[x, y] != null)
+            {
+                grid[x, y].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    private static void AtivarSeForBomba(Transform bloco)
+    {
+        if (bloco.TryGetComponent<BlocoBomba>(out BlocoBomba bomba))
+        {
+            bomba.AtivarBomba();
+        }
+    }
+
+    private static void DerrubarLinhasSuperiores(int linhaInicialY)
+    {
+        // Varre todas as linhas acima da que foi apagada
+        for (int y = linhaInicialY; y < altura; y++)
+        {
+            for (int x = 0; x < largura; x++)
+            {
+                if (grid[x, y] != null)
+                {
+                    // Move o dado na matriz matemática para uma linha abaixo
+                    grid[x, y - 1] = grid[x, y];
+                    grid[x, y] = null;
+
+                    // Move visualmente o objeto físico do bloco 1 unidade para baixo
+                    grid[x, y - 1].position += new Vector3(0, -1, 0);
+
+                    AtivarSeForBomba(grid[x, y - 1]); // Se for bomba, ativa a explosão
+                }
+            }
+        }
+    }
+
+    //---- Validadores ----//
+
+    public static bool VerificarPosicao(int x, int y)
+    {
+        // Verifica se o bloco está dentro dos limites e se não bateu em outro bloco
+
+        if (x < 0 || x >= largura || y < 0) return false;
+        if (y < altura && grid[x, y] != null) return false;
+
+        return true;
     }
 
     void IniciarChecagemDeLinhas()
@@ -140,19 +221,6 @@ public class GerenciadorGrid : MonoBehaviour
         }
     }
 
-    private static void EsconderLinhaVisualmente(int y)
-    {
-        //TODO: Adicionar animação para os blocos sumirem, por enquanto apenas desativa o GameObject
-        // Deixa os blocos invisíveis temporariamente
-        for (int x = 0; x < largura; x++)
-        {
-            if (grid[x, y] != null)
-            {
-                grid[x, y].gameObject.SetActive(false);
-            }
-        }
-    }
-
     private static bool LinhaEstaCheia(int y)
     {
         // Se encontrar qualquer espaço vazio na horizontal, a linha não está cheia
@@ -166,40 +234,6 @@ public class GerenciadorGrid : MonoBehaviour
         return true;
     }
 
-    private static void ApagarLinha(int y)
-    {
-        for (int x = 0; x < largura; x++)
-        {
-            if (grid[x, y] != null)
-            {
-                // Destrói o quadradinho visual no Unity
-                Destroy(grid[x, y].gameObject);
-                // Limpa o registro na nossa matriz matemática
-                grid[x, y] = null;
-            }
-        }
-    }
-
-    private static void DerrubarLinhasSuperiores(int linhaInicialY)
-    {
-        // Varre todas as linhas acima da que foi apagada
-        for (int y = linhaInicialY; y < altura; y++)
-        {
-            for (int x = 0; x < largura; x++)
-            {
-                if (grid[x, y] != null)
-                {
-                    // Move o dado na matriz matemática para uma linha abaixo
-                    grid[x, y - 1] = grid[x, y];
-                    grid[x, y] = null;
-
-                    // Move visualmente o objeto físico do bloco 1 unidade para baixo
-                    grid[x, y - 1].position += new Vector3(0, -1, 0);
-                }
-            }
-        }
-    }
-
     //---- Camera ----//
 
     void ConfigurarCamera()
@@ -209,14 +243,23 @@ public class GerenciadorGrid : MonoBehaviour
 
         // Calcula o centro exato do grid azul
         float centroX = LarguraGrid / 2f;
-        float centroY = AlturaGrid / 2f;
+        float centroY = (AlturaGrid / 2f) + espacoExtraNoTopo;
 
         // Move a câmera para esse centro (mantendo o Z em -10)
         cam.transform.position = new Vector3(centroX, centroY, -10f);
 
         // Ajusta o tamanho do zoom com uma pequena margem (+1)
         cam.orthographic = true;
-        cam.orthographicSize = (AlturaGrid / 2f) + 1f;
+
+        // Calculamos o tamanho da tela com base na largura desejada + margem das laterais.
+        // Dividimos pela proporção (aspect ratio) da tela atual do jogador.
+        float tamanhoBaseadoNaLargura = (LarguraGrid / 2f + margemLateralExtra) / cam.aspect;
+
+        // Calculamos também baseado na altura padrão com a margem do topo
+        float tamanhoBaseadoNaAltura = (AlturaGrid / 2f) + 1f;
+
+        // A câmera escolhe o maior tamanho entre os dois para garantir que NADA fique cortado
+        cam.orthographicSize = Mathf.Max(tamanhoBaseadoNaLargura, tamanhoBaseadoNaAltura);
     }
 
     //---- UI ----//

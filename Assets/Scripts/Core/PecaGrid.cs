@@ -8,6 +8,12 @@ public class PecaGrid : MonoBehaviour
     private float tempoUltimoPasso;
     private float tempoPorPasso = 0.8f;
 
+    [Header("Configuração de Queda Rápida")]
+    [Tooltip("Velocidade da queda ao segurar para baixo (ex: 0.05s por passo, muito mais rápido)")]
+    public float velocidadeQuedaRapida = 0.05f;
+
+    private float velocidadeGerenciador = 0.8f; //usado para armazenar a velocidade no start
+
     #endregion
 
     #region Ciclo
@@ -16,7 +22,8 @@ public class PecaGrid : MonoBehaviour
     {
         tempoUltimoPasso = Time.time;
 
-        tempoPorPasso = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
+        velocidadeGerenciador = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
+        tempoPorPasso = velocidadeGerenciador;
 
         // Se nascer em posição inválida de cara, é GameOver imediato
         if (!PosicaoValida())
@@ -29,6 +36,18 @@ public class PecaGrid : MonoBehaviour
     void Update()
     {
         if (!GerenciadorJogo.Instancia.jogoAtivo || GerenciadorJogo.Instancia.jogoPausado) return;
+
+        var teclado = Keyboard.current;
+
+        // SoftDrop
+        if (teclado != null && (teclado.downArrowKey.isPressed || teclado.sKey.isPressed)) // Se estiver segurando a Seta para Baixo ou a tecla S, usa a velocidade rápida fixa
+        {
+            tempoPorPasso = velocidadeQuedaRapida;
+        }
+        else
+        {
+            tempoPorPasso = velocidadeGerenciador;
+        }
 
         // Queda Automática
         if (Time.time - tempoUltimoPasso >= tempoPorPasso)
@@ -54,7 +73,6 @@ public class PecaGrid : MonoBehaviour
         }
 
         // Movimentação do teclado
-        var teclado = Keyboard.current;
         if (teclado != null)
         {
             if (teclado.leftArrowKey.wasPressedThisFrame || teclado.aKey.wasPressedThisFrame) Mover(new Vector3(-1, 0, 0));

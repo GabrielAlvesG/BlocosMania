@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a29f7bf1e758df42b9e82df4e43d4ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PecaGrid
-  tempoPorPasso: 0.8
+  velocidadeQuedaRapida: 0.05
 --- !u!1 &4874590463358602342
 GameObject:
   m_ObjectHideFlags: 0
@@ -61,7 +61,7 @@ GameObject:
   - component: {fileID: 892025454954069434}
   m_Layer: 0
   m_Name: Square
-  m_TagString: Untagged
+  m_TagString: Pecas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -130,8 +130,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.40295142, g: 0.98039216, b: 0.003921577, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
+  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -153,7 +153,7 @@ GameObject:
   - component: {fileID: 6002178118392400254}
   m_Layer: 0
   m_Name: Square (1)
-  m_TagString: Untagged
+  m_TagString: Pecas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -222,8 +222,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.40295142, g: 0.98039216, b: 0.003921577, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
+  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -245,7 +245,7 @@ GameObject:
   - component: {fileID: 8631551667845987039}
   m_Layer: 0
   m_Name: Square (2)
-  m_TagString: Untagged
+  m_TagString: Pecas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -314,8 +314,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.40295142, g: 0.98039216, b: 0.003921577, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
+  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -337,7 +337,7 @@ GameObject:
   - component: {fileID: 485997017213227078}
   m_Layer: 0
   m_Name: Square (3)
-  m_TagString: Untagged
+  m_TagString: Pecas
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -406,8 +406,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.40295142, g: 0.98039216, b: 0.003921577, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
+  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
