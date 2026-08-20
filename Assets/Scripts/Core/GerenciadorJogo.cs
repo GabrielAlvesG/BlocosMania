@@ -42,6 +42,14 @@ public class GerenciadorJogo : MonoBehaviour
     [Tooltip("Tempo em segundos para subir de nível (ex: a cada 30 segundos)")]
     public float tempoPorNivel = 30f;
 
+    [Header("Efeito de Gelo (Freeze)")]
+    public GameObject painelHudFrio;
+    private bool geloAtivo = false;
+    private float cronometroGelo = 0f;
+
+    [Header("Efeito do Ventilador (Vento)")]
+    public TextMeshProUGUI textoDirecaoVento; // TODO: Trocar por algum icone ou algo diferente
+
     // Variáveis de controle interno
 
     private int pontuacaoAtual = 0;
@@ -111,6 +119,16 @@ public class GerenciadorJogo : MonoBehaviour
         {
             cronometroAtualizacaoUi = 0f;
             AtualizarTextoVisual();
+        }
+
+        // Controle do tempo do Gelo
+        if (geloAtivo)
+        {
+            cronometroGelo -= Time.deltaTime;
+            if (cronometroGelo <= 0f)
+            {
+                DesativarEfeitoGelo();
+            }
         }
     }
 
@@ -245,6 +263,12 @@ public class GerenciadorJogo : MonoBehaviour
 
     public float ObterVelocidadeAtual()
     {
+        // Se o gelo estiver ativo, a peça demora o DOBRO do tempo para cair (fica 2x mais lenta)
+        if (geloAtivo)
+        {
+            return velocidadeGlobalAtual * 2f;
+        }
+
         return velocidadeGlobalAtual;
     }
 
@@ -295,6 +319,34 @@ public class GerenciadorJogo : MonoBehaviour
         int minutos = Mathf.FloorToInt(segundos / 60f);
         int segs = Mathf.FloorToInt(segundos % 60f);
         return $"{minutos:D2}:{segs:D2}";
+    }
+
+    //---- Funcoes de Efeito de Gelo ----//
+
+    public void AtivarEfeitoGelo(float duracao)
+    {
+        geloAtivo = true;
+        cronometroGelo = duracao;
+        if (painelHudFrio != null) painelHudFrio.SetActive(true); // Mostra o efeito visual de frio
+        Debug.Log("❄️ O jogo foi congelado! Peças mais lentas.");
+    }
+
+    void DesativarEfeitoGelo()
+    {
+        geloAtivo = false;
+        if (painelHudFrio != null) painelHudFrio.SetActive(false); // Esconde o efeito visual
+        Debug.Log("☀️ O gelo derreteu! Velocidade normal restabelecida.");
+    }
+
+    //---- Funcoes de Efeito de Vento ----//
+
+    public void AtualizarHUDVento(int direcao) //TODO: Trocar por um icone ou outra coisa
+    {
+        if (textoDirecaoVento == null) return;
+
+        if (direcao == -1) textoDirecaoVento.text = "<- Vento";
+        else if (direcao == 1) textoDirecaoVento.text = "Vento ->";
+        else textoDirecaoVento.text = "";
     }
 
     #endregion

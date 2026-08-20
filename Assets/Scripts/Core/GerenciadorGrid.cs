@@ -15,10 +15,12 @@ public class GerenciadorGrid : MonoBehaviour
     public SpriteRenderer spriteFundo;
 
     [Header("Ajustes de Câmera")]
-    [Tooltip("Margem extra nas laterais para caber a UI (Valores maiores afastam a câmera para os lados)")]
-    public float margemLateralExtra = 4.0f; 
-    [Tooltip("Espaço extra que você quer abrir no topo da tela (valores maiores sobem a câmera)")]
-    public float espacoExtraNoTopo = 3.0f;
+    [Tooltip("ajusta o zoom da camera UI (Valores maiores afastam a câmera)")]
+    public float ZoomCamera = 1f; 
+    [Tooltip("Adiciona extra na posicao Y")]
+    public float posExtraY = 2.0f;
+    [Tooltip("Adiciona extra na posicao X")]
+    public float posExtraX = 2.0f;
 
 
     public static int largura = 10;
@@ -80,9 +82,6 @@ public class GerenciadorGrid : MonoBehaviour
         System.Collections.Generic.List<Transform> filhos = new System.Collections.Generic.List<Transform>();
         foreach (Transform filho in paiDaPeca) filhos.Add(filho);
 
-        //// Guarda as bombas encontradas para ativá-las depois que todos os blocos estiverem salvos na matriz
-        //List<BlocoBomba> bombasParaAtivar = new List<BlocoBomba>();
-
         foreach (Transform filho in filhos)
         {
             int x = Mathf.FloorToInt(filho.position.x);
@@ -94,22 +93,11 @@ public class GerenciadorGrid : MonoBehaviour
             if (y >= 0 && y < altura && x >= 0 && x < largura)
             {
                 grid[x, y] = filho;
-
-                //if (filho.TryGetComponent<BlocoBomba>(out BlocoBomba bomba)) //se bomba guardamos para ativar
-                //{
-                //    bombasParaAtivar.Add(bomba);
-                //}
             }
 
             // Desacopla o bloco do objeto Pai para que ele vire um bloco independente no cenário
             filho.parent = null;
         }
-
-        //// Ativa todas as bombas que acabaram de pousar
-        //foreach (BlocoBomba bomba in bombasParaAtivar)
-        //{
-        //    bomba.AtivarBomba();
-        //}
 
         // Faz a varredura se alguma linha completou
         FindAnyObjectByType<GerenciadorGrid>().IniciarChecagemDeLinhas();
@@ -150,6 +138,14 @@ public class GerenciadorGrid : MonoBehaviour
         }
     }
 
+    private static void AtivarSeForGelo(Transform bloco)
+    {
+        if (bloco.TryGetComponent<BlocoGelo>(out BlocoGelo gelo))
+        {
+            gelo.AtivarGelo();
+        }
+    }
+
     private static void DerrubarLinhasSuperiores(int linhaInicialY)
     {
         // Varre todas as linhas acima da que foi apagada
@@ -167,6 +163,8 @@ public class GerenciadorGrid : MonoBehaviour
                     grid[x, y - 1].position += new Vector3(0, -1, 0);
 
                     AtivarSeForBomba(grid[x, y - 1]); // Se for bomba, ativa a explosão
+
+                    AtivarSeForGelo(grid[x, y - 1]); // Se for gelo, ativa a gelo (lentidão temporária do jogo)
                 }
             }
         }
@@ -242,8 +240,8 @@ public class GerenciadorGrid : MonoBehaviour
         if (cam == null) return;
 
         // Calcula o centro exato do grid azul
-        float centroX = LarguraGrid / 2f;
-        float centroY = (AlturaGrid / 2f) + espacoExtraNoTopo;
+        float centroX = (LarguraGrid / 2f) + posExtraX;
+        float centroY = (AlturaGrid / 2f) + posExtraY;
 
         // Move a câmera para esse centro (mantendo o Z em -10)
         cam.transform.position = new Vector3(centroX, centroY, -10f);
@@ -253,10 +251,9 @@ public class GerenciadorGrid : MonoBehaviour
 
         // Calculamos o tamanho da tela com base na largura desejada + margem das laterais.
         // Dividimos pela proporção (aspect ratio) da tela atual do jogador.
-        float tamanhoBaseadoNaLargura = (LarguraGrid / 2f + margemLateralExtra) / cam.aspect;
+        float tamanhoBaseadoNaLargura = (LarguraGrid / 2f + ZoomCamera) / cam.aspect;
 
-        // Calculamos também baseado na altura padrão com a margem do topo
-        float tamanhoBaseadoNaAltura = (AlturaGrid / 2f) + 1f;
+        float tamanhoBaseadoNaAltura = (AlturaGrid / 2f + ZoomCamera) + 1f;
 
         // A câmera escolhe o maior tamanho entre os dois para garantir que NADA fique cortado
         cam.orthographicSize = Mathf.Max(tamanhoBaseadoNaLargura, tamanhoBaseadoNaAltura);

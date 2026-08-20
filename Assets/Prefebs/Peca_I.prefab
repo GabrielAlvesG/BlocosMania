@@ -49,6 +49,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PecaGrid
   velocidadeQuedaRapida: 0.05
+  intervaloVento: 1.2
 --- !u!1 &4874590463358602342
 GameObject:
   m_ObjectHideFlags: 0
@@ -130,8 +131,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
-  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
+  m_Sprite: {fileID: -7814429722272023704, guid: b2a5be79ba4091841b10d84a9d7c8e6c, type: 3}
+  m_Color: {r: 0.52156866, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -222,8 +223,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
-  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
+  m_Sprite: {fileID: -7814429722272023704, guid: b2a5be79ba4091841b10d84a9d7c8e6c, type: 3}
+  m_Color: {r: 0.52156866, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -314,8 +315,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
-  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
+  m_Sprite: {fileID: -7814429722272023704, guid: b2a5be79ba4091841b10d84a9d7c8e6c, type: 3}
+  m_Color: {r: 0.52156866, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -406,8 +407,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 560ad14c150710744889db08167b9765, type: 3}
-  m_Color: {r: 0.7561264, g: 1, b: 0.49019608, a: 1}
+  m_Sprite: {fileID: -7814429722272023704, guid: b2a5be79ba4091841b10d84a9d7c8e6c, type: 3}
+  m_Color: {r: 0.52156866, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

@@ -12,7 +12,10 @@ public class PecaGrid : MonoBehaviour
     [Tooltip("Velocidade da queda ao segurar para baixo (ex: 0.05s por passo, muito mais rápido)")]
     public float velocidadeQuedaRapida = 0.05f;
 
-    private float velocidadeGerenciador = 0.8f; //usado para armazenar a velocidade no start
+    [Header("Configuração de Vento")]
+    public float intervaloVento = 1.2f; // A cada 1.2 segundos o vento empurra
+    private float tempoUltimoEmpurraoVento;
+    private int direcaoDoVentoNestaPeca = 0; // 0 = Sem vento, -1 = Esquerda, 1 = Direita
 
     #endregion
 
@@ -21,9 +24,11 @@ public class PecaGrid : MonoBehaviour
     void Start()
     {
         tempoUltimoPasso = Time.time;
+        tempoUltimoEmpurraoVento = Time.time; // Inicializa o vento
 
-        velocidadeGerenciador = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
-        tempoPorPasso = velocidadeGerenciador;
+        tempoPorPasso = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
+
+        ChecarSeTemVentilador();
 
         // Se nascer em posição inválida de cara, é GameOver imediato
         if (!PosicaoValida())
@@ -46,7 +51,7 @@ public class PecaGrid : MonoBehaviour
         }
         else
         {
-            tempoPorPasso = velocidadeGerenciador;
+            tempoPorPasso = GerenciadorJogo.Instancia.ObterVelocidadeAtual();
         }
 
         // Queda Automática
@@ -62,6 +67,9 @@ public class PecaGrid : MonoBehaviour
                 // Fixa todos os quadradinhos filhos individualmente na matriz
                 GerenciadorGrid.FixarPecaNoGrid(transform);
 
+                //zeramos o HUD do vento (pois a peça que tinha o bloco de vento foi fixada)
+                GerenciadorJogo.Instancia.AtualizarHUDVento(0);
+
                 // Destrói apenas o objeto Pai vazio, deixando os blocos fixos na cena
                 Destroy(this);
 
@@ -70,6 +78,13 @@ public class PecaGrid : MonoBehaviour
                 return;
             }
             tempoUltimoPasso = Time.time;
+        }
+
+        // Ventilador
+        if (direcaoDoVentoNestaPeca != 0 && Time.time - tempoUltimoEmpurraoVento >= intervaloVento)
+        {
+            Mover(new Vector3(direcaoDoVentoNestaPeca, 0, 0));
+            tempoUltimoEmpurraoVento = Time.time;
         }
 
         // Movimentação do teclado
@@ -115,6 +130,22 @@ public class PecaGrid : MonoBehaviour
             if (!GerenciadorGrid.VerificarPosicao(x, y)) return false;
         }
         return true;
+    }
+
+    void ChecarSeTemVentilador()
+    {
+        BlocoVento blocoDeVentoEncontrado = GetComponentInChildren<BlocoVento>();
+        if (blocoDeVentoEncontrado != null)
+        {
+            // Adota a direção que o bloco sorteou
+            direcaoDoVentoNestaPeca = blocoDeVentoEncontrado.minhaDirecaoVento;
+        }
+        else
+        {
+            direcaoDoVentoNestaPeca = 0; // Peça comum, sem vento
+        }
+
+        GerenciadorJogo.Instancia.AtualizarHUDVento(direcaoDoVentoNestaPeca);
     }
 
     #endregion
