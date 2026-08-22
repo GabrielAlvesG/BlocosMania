@@ -27,6 +27,12 @@ public class GeradorDeBlocos : MonoBehaviour
     public float chanceDeBlocoVento = 25f;
     public Sprite spriteVentilador;
 
+
+    [Header("Configuração do Bloco de Moeda")]
+    [Range(0f, 100f), Tooltip("Porcentagem de chance de uma peça nascer contendo um bloco de moeda")]
+    public float chanceDeBlocoMoeda = 25f;
+    public Sprite spriteMoeda;
+
     private int indicePecaAtual = 0;
     private int indiceProximaPeca = 0;
     private bool primeiroSpawn = false;
@@ -68,6 +74,7 @@ public class GeradorDeBlocos : MonoBehaviour
 
         List<Transform> blocosFilhos = GetBlocosFilhos(novaPeca);
 
+        Sortear<BlocoDinheiro>(blocosFilhos, chanceDeBlocoMoeda, spriteMoeda);
         Sortear<BlocoBomba>(blocosFilhos, chanceDeBomba, SpriteBomba);
         Sortear<BlocoGelo>(blocosFilhos, chanceDeBlocoGelo, spriteGelo);
         Sortear<BlocoVento>(blocosFilhos, chanceDeBlocoVento, spriteVentilador);

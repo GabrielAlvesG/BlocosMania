@@ -10,13 +10,12 @@ public class GerenciadorGrid : MonoBehaviour
     public int LarguraGrid = 10;
     public int AlturaGrid = 20;
 
-
     [Header("Configuracoes UI")]
     public SpriteRenderer spriteFundo;
 
     [Header("Ajustes de Câmera")]
     [Tooltip("ajusta o zoom da camera UI (Valores maiores afastam a câmera)")]
-    public float ZoomCamera = 1f; 
+    public float ZoomCamera = 1f;
     [Tooltip("Adiciona extra na posicao Y")]
     public float posExtraY = 2.0f;
     [Tooltip("Adiciona extra na posicao X")]
@@ -109,6 +108,8 @@ public class GerenciadorGrid : MonoBehaviour
         {
             if (grid[x, y] != null)
             {
+                AdicionarMoedas(grid[x, y]); // Adiciona moedas se o bloco for do tipo dinheiro
+
                 // Destrói o quadradinho visual no Unity
                 Destroy(grid[x, y].gameObject);
                 // Limpa o registro na nossa matriz matemática
@@ -146,6 +147,14 @@ public class GerenciadorGrid : MonoBehaviour
         }
     }
 
+    private static void AdicionarMoedas(Transform bloco)
+    {
+        if (bloco.TryGetComponent<BlocoDinheiro>(out BlocoDinheiro dinheiro))
+        {
+            dinheiro.ColetarMoedas();
+        }
+    }
+
     private static void DerrubarLinhasSuperiores(int linhaInicialY)
     {
         // Varre todas as linhas acima da que foi apagada
@@ -168,6 +177,79 @@ public class GerenciadorGrid : MonoBehaviour
                 }
             }
         }
+    }
+
+    public static void ForcarLimpezaDeLinhaEspecifica(int y)
+    {
+        // Garante que a linha está dentro dos limites reais do tabuleiro
+        if (y >= 0 && y < altura)
+        {
+            // Executa o mesmo processo de ocultação e destruição que criamos antes
+            for (int x = 0; x < largura; x++)
+            {
+                if (grid[x, y] != null)
+                {
+                    Destroy(grid[x, y].gameObject);
+                    grid[x, y] = null;
+                }
+            }
+
+            // Derruba quem estava em cima para ocupar o buraco e organiza a gravidade
+            DerrubarLinhasSuperiores(y + 1);
+            AplicarGravidadeGlobal();
+        }
+    }
+
+    public static void AplicarGravidadeGlobal()
+    {
+        bool algumBlocoCaiu;
+
+        // Usamos um loop 'do-while' porque a queda de um bloco pode isolar outro bloco acima dele, 
+        // então repetimos o processo até que nenhum bloco precise mais cair neste frame.
+        do
+        {
+            algumBlocoCaiu = false;
+
+            // Varre o grid de baixo para cima (começa no y = 1 porque o y = 0 já é o chão)
+            for (int y = 1; y < altura; y++)
+            {
+                for (int x = 0; x < largura; x++)
+                {
+                    Transform blocoAtual = grid[x, y];
+
+                    // Só checa se a posição atual contiver um bloco de verdade
+                    if (blocoAtual != null)
+                    {
+                        // 1. REGRA DO CHÃO: O espaço logo abaixo precisa estar vazio
+                        bool temChaoAbaixo = (grid[x, y - 1] != null);
+
+                        // 2. REGRA DAS LATERAIS: Verifica se tem vizinho na esquerda
+                        bool temVizinhoEsquerda = (x > 0 && grid[x - 1, y] != null);
+
+                        // 3. REGRA DAS LATERAIS: Verifica se tem vizinho na direita
+                        bool temVizinhoDireita = (x < largura - 1 && grid[x + 1, y] != null);
+
+                        // O bloco só cai se NÃO tiver chão E NÃO tiver nenhum vizinho nas laterais (está sozinho!)
+                        if (!temChaoAbaixo && !temVizinhoEsquerda && !temVizinhoDireita)
+                        {
+                            // Move o bloco na matriz matemática 1 unidade para baixo
+                            grid[x, y - 1] = blocoAtual;
+                            grid[x, y] = null;
+
+                            // Atualiza a posição visual do Sprite no Unity
+                            blocoAtual.position = new Vector3(x + 0.5f, (y - 1) + 0.5f, 0f);
+
+                            // Marca que houve movimento para o loop checar novamente a grade toda
+                            algumBlocoCaiu = true;
+                        }
+                    }
+                }
+            }
+        } while (algumBlocoCaiu);
+
+        // Após toda a poeira baixar e os blocos isolados caírem, 
+        // fazemos uma varredura para ver se essa queda acabou completando alguma nova linha!
+        FindAnyObjectByType<GerenciadorGrid>().IniciarChecagemDeLinhas();
     }
 
     //---- Validadores ----//
@@ -215,6 +297,7 @@ public class GerenciadorGrid : MonoBehaviour
         //Se destruiu linhas, adiciona pontos na pontuação do jogador
         if (linhasDestruidasNessaPeca > 0 && GerenciadorJogo.Instancia != null)
         {
+            AplicarGravidadeGlobal();
             GerenciadorJogo.Instancia.AdicionarPontos(linhasDestruidasNessaPeca);
         }
     }

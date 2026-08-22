@@ -134,10 +134,8 @@ public class BlocoBomba : MonoBehaviour
         // Destrói o próprio objeto físico desta bomba após limpar a cruz
         Destroy(gameObject);
 
-        //TODO:Verificar se é necessario ou se fica legal com a explosao!
-        //GerenciadorGrid.AplicarGravidadeGlobal();
+        GerenciadorGrid.AplicarGravidadeGlobal();
     }
 
     #endregion
-
 }

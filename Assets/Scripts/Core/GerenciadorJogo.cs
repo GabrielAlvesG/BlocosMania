@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class GerenciadorJogo : MonoBehaviour
 {
@@ -23,6 +24,11 @@ public class GerenciadorJogo : MonoBehaviour
     public TextMeshProUGUI HUD_textoNivel;
     public TextMeshProUGUI HUD_textoTempoJogo;
 
+    [Header("Loja")]
+    public TextMeshProUGUI textoMoedasHUD; // Arraste o texto de moedas aqui
+    public TextMeshProUGUI textoCustoHabilidade; // Arraste o texto do preço do botão aqui
+    public Button botaoLimparLinha; // Arraste o botão de limpar linha aqui
+
     [Header("Pause")]
     public GameObject painelPause;
 
@@ -31,6 +37,7 @@ public class GerenciadorJogo : MonoBehaviour
     public TextMeshProUGUI GameOver_textoPontuacao;
     public TextMeshProUGUI GameOver_textoNivel;
     public TextMeshProUGUI GameOver_textoTempoJogo;
+    public GameObject GameOver_recorde;
 
     [Header("Configurações de Nível e Velocidade")]
     [Tooltip("Velocidade do Nível 1 (segundos por passo)")]
@@ -51,15 +58,24 @@ public class GerenciadorJogo : MonoBehaviour
     public TextMeshProUGUI textoDirecaoVento; // TODO: Trocar por algum icone ou algo diferente
 
     // Variáveis de controle interno
-
-    private int pontuacaoAtual = 0;
-
-    private float velocidadeGlobalAtual;
     private int nivelAtual = 1;
-    private float cronometroNivel;
+    private int pontuacaoAtual = 0;
+    private float velocidadeGlobalAtual;
     private float tempoJogoTotal;
+
+    //Niveis
+    private float cronometroNivel;
     private float cronometroAtualizacaoUi;
     private const float IntervaloAtualizacaoUi = 0.25f;
+
+    //Dados Permanentes (salvos no PlayerPrefs)
+    private int moedasTotais = 0;
+    private int recordePontuacao = 0;
+
+
+    // Tabela progressiva de custo da habilidade
+    private int[] tabelaCustos = new int[] { 3, 5, 10, 15, 25, 40, 60, 90, 130, 200 };
+    private int indiceCustoAtual = 0;
 
     #endregion
 
@@ -77,6 +93,11 @@ public class GerenciadorJogo : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
+
+        // Carrega dados salvos do PlayerPrefs
+        moedasTotais = PlayerPrefs.GetInt("MoedasSalvas", 0);
+        recordePontuacao = PlayerPrefs.GetInt("RecordeSalvo", 0);
     }
 
     void Start()
@@ -145,6 +166,7 @@ public class GerenciadorJogo : MonoBehaviour
         //Esconde os paineis
         if (painelPause != null) painelPause.SetActive(false);
         if (painelGameover != null) painelGameover.SetActive(false);
+        if (GameOver_recorde != null) GameOver_recorde.SetActive(false);
 
         jogoAtivo = true;
         pontuacaoAtual = 0;
@@ -154,6 +176,8 @@ public class GerenciadorJogo : MonoBehaviour
         cronometroAtualizacaoUi = 0f;
 
         velocidadeGlobalAtual = velocidadeInicial;
+
+        indiceCustoAtual = 0; // Reseta o preço da habilidade para o início (3 moedas) ao começar novo jogo
 
         AtualizarTextoVisual();
 
@@ -191,6 +215,17 @@ public class GerenciadorJogo : MonoBehaviour
         jogoAtivo = false;
         Time.timeScale = 0f; // Congela tempo
 
+        // VERIFICA SE BATEU O RECORDE DA HISTÓRIA DO JOGO
+        if (pontuacaoAtual > recordePontuacao)
+        {
+            recordePontuacao = pontuacaoAtual;
+            PlayerPrefs.SetInt("RecordeSalvo", recordePontuacao);
+            PlayerPrefs.Save();
+
+            if (GameOver_recorde != null) //Exibe que fez um novo record
+                GameOver_recorde.SetActive(true);
+        }
+
         if (HUD != null) //Esconde o HUD de jogo
             HUD.SetActive(false);
 
@@ -199,23 +234,11 @@ public class GerenciadorJogo : MonoBehaviour
 
         //Carrega os textos finais de GameOver
 
+        if (GameOver_textoNivel != null) GameOver_textoNivel.text = $"NÍVEL {nivelAtual}";
 
+        if (GameOver_textoTempoJogo != null) GameOver_textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
 
-        if (GameOver_textoNivel != null)
-        {
-            GameOver_textoNivel.text = $"NÍVEL {nivelAtual}";
-        }
-
-        if (GameOver_textoTempoJogo != null)
-        {
-            GameOver_textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
-        }
-
-        if (GameOver_textoPontuacao != null)
-        {
-            GameOver_textoPontuacao.text = $"PONTOS {pontuacaoAtual.ToString("D5")}";
-        }
-
+        if (GameOver_textoPontuacao != null) GameOver_textoPontuacao.text = $"PONTOS {pontuacaoAtual.ToString("D5")}";
     }
 
     public void ReiniciarJogo()
@@ -282,18 +305,6 @@ public class GerenciadorJogo : MonoBehaviour
         return tempoJogoTotal;
     }
 
-    public void AdicionarPontos(int quantidadeLinhas)
-    {
-        if (!jogoAtivo) return;
-
-        if (quantidadeLinhas == 1) pontuacaoAtual += 100;
-        else if (quantidadeLinhas == 2) pontuacaoAtual += 300;
-        else if (quantidadeLinhas == 3) pontuacaoAtual += 500;
-        else if (quantidadeLinhas >= 4) pontuacaoAtual += 800;
-
-        AtualizarTextoVisual();
-    }
-
     //---- Funcoes de UI ----//
 
     void AtualizarTextoVisual()
@@ -319,6 +330,20 @@ public class GerenciadorJogo : MonoBehaviour
         int minutos = Mathf.FloorToInt(segundos / 60f);
         int segs = Mathf.FloorToInt(segundos % 60f);
         return $"{minutos:D2}:{segs:D2}";
+    }
+
+    //---- Funcoes Pontos ----//
+
+    public void AdicionarPontos(int quantidadeLinhas)
+    {
+        if (!jogoAtivo) return;
+
+        if (quantidadeLinhas == 1) pontuacaoAtual += 100;
+        else if (quantidadeLinhas == 2) pontuacaoAtual += 300;
+        else if (quantidadeLinhas == 3) pontuacaoAtual += 500;
+        else if (quantidadeLinhas >= 4) pontuacaoAtual += 800;
+
+        AtualizarTextoVisual();
     }
 
     //---- Funcoes de Efeito de Gelo ----//
@@ -347,6 +372,73 @@ public class GerenciadorJogo : MonoBehaviour
         if (direcao == -1) textoDirecaoVento.text = "<- Vento";
         else if (direcao == 1) textoDirecaoVento.text = "Vento ->";
         else textoDirecaoVento.text = "";
+    }
+
+    //----- Funcoes de Moedas ----//
+
+    public void AdicionarMoedas(int qtd)
+    {
+        moedasTotais += qtd;
+        // Salva imediatamente no dispositivo do jogador
+        PlayerPrefs.SetInt("MoedasSalvas", moedasTotais);
+        PlayerPrefs.Save();
+
+        AtualizarInterfaceLoja();
+    }
+
+    //---- Funcoes de Loja ----//
+
+    int ObterCustoAtual()
+    {
+        if (indiceCustoAtual < tabelaCustos.Length) return tabelaCustos[indiceCustoAtual];
+        return 250; // Custo fixo máximo caso ele use mais de 10 vezes na mesma partida
+    }
+
+    public void ComprarLimpezaDeLinha()//TODO ver se vamos deixar a ultima ou vamos escolher uma linha
+    {
+        if (!jogoAtivo || jogoPausado) return;
+
+        // Descobre o preço atual baseado no índice
+        int custoAtual = ObterCustoAtual();
+
+        // Verifica se o jogador tem moedas suficientes
+        if (moedasTotais >= custoAtual)
+        {
+            // Cobra o jogador
+            moedasTotais -= custoAtual;
+            PlayerPrefs.SetInt("MoedasSalvas", moedasTotais);
+            PlayerPrefs.Save();
+
+            // Sobe o custo para a próxima compra (avança na tabela de custos)
+            if (indiceCustoAtual < tabelaCustos.Length - 1)
+            {
+                indiceCustoAtual++;
+            }
+
+            // ATIVA A LIMPEZA: Manda o Grid explodir a ÚLTIMA linha (Linha 0)
+            // Ganhamos os pontos correspondentes (1 linha = 100 pontos)
+            AdicionarPontos(1);
+            GerenciadorGrid.ForcarLimpezaDeLinhaEspecifica(0);
+
+            AtualizarInterfaceLoja();
+            Debug.Log("🧹 Habilidade usada! Última linha limpa.");
+        }
+        else
+        {
+            Debug.LogWarning("❌ Moedas insuficientes!");
+        }
+    }
+
+    void AtualizarInterfaceLoja()
+    {
+        if (textoMoedasHUD != null) textoMoedasHUD.text = "COINS: " + moedasTotais.ToString();
+        if (textoCustoHabilidade != null) textoCustoHabilidade.text = "PREÇO: " + ObterCustoAtual().ToString();
+
+        // Desativa visualmente o botão clicável se o jogador não tiver dinheiro
+        if (botaoLimparLinha != null)
+        {
+            botaoLimparLinha.interactable = (moedasTotais >= ObterCustoAtual());
+        }
     }
 
     #endregion

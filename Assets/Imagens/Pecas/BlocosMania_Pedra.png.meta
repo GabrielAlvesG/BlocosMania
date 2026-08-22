@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 4b2a4db2c719f9c4f93344e2a00183ed
+guid: 9418f17c99e6b5c418a0f4d3a63965e0
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 762671666726580414
-    second: BarrilDinheiro_0
+      213: -5198341209690572220
+    second: BlocosMania_Pedra_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,7 +126,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BarrilDinheiro_0
+      name: BlocosMania_Pedra_0
       rect:
         serializedVersion: 2
         x: 0
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: eb03e7f07dd859a00800000000000000
-      internalID: 762671666726580414
+      spriteID: 44a7e173638cbd7b0800000000000000
+      internalID: -5198341209690572220
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BarrilDinheiro_0: 762671666726580414
+      BlocosMania_Pedra_0: -5198341209690572220
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
