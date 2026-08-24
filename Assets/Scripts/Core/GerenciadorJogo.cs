@@ -55,7 +55,8 @@ public class GerenciadorJogo : MonoBehaviour
     private float cronometroGelo = 0f;
 
     [Header("Efeito do Ventilador (Vento)")]
-    public TextMeshProUGUI textoDirecaoVento; // TODO: Trocar por algum icone ou algo diferente
+    public Image imgVentoEsq;
+    public Image imgVentoDir;
 
     // Variáveis de controle interno
     private int nivelAtual = 1;
@@ -316,12 +317,12 @@ public class GerenciadorJogo : MonoBehaviour
 
         if (HUD_textoTempoJogo != null)
         {
-            HUD_textoTempoJogo.text = $"TEMPO {FormatarTempo(tempoJogoTotal)}";
+            HUD_textoTempoJogo.text = $"{FormatarTempo(tempoJogoTotal)}";
         }
 
         if (HUD_textoPontuacao != null)
         {
-            HUD_textoPontuacao.text = "PONTOS\n" + pontuacaoAtual.ToString("D5");
+            HUD_textoPontuacao.text = "" + pontuacaoAtual.ToString("D5");
         }
     }
 
@@ -367,11 +368,23 @@ public class GerenciadorJogo : MonoBehaviour
 
     public void AtualizarHUDVento(int direcao) //TODO: Trocar por um icone ou outra coisa
     {
-        if (textoDirecaoVento == null) return;
+        if (imgVentoEsq == null || imgVentoDir == null) return;
 
-        if (direcao == -1) textoDirecaoVento.text = "<- Vento";
-        else if (direcao == 1) textoDirecaoVento.text = "Vento ->";
-        else textoDirecaoVento.text = "";
+        if (direcao == -1)
+        {
+            imgVentoEsq.gameObject.SetActive(true);
+            imgVentoDir.gameObject.SetActive(false);
+        }
+        else if (direcao == 1)
+        {
+            imgVentoEsq.gameObject.SetActive(false);
+            imgVentoDir.gameObject.SetActive(true);
+        }
+        else
+        {
+            imgVentoEsq.gameObject.SetActive(false);
+            imgVentoDir.gameObject.SetActive(false);
+        }
     }
 
     //----- Funcoes de Moedas ----//

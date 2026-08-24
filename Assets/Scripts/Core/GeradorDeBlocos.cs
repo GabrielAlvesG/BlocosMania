@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GeradorDeBlocos : MonoBehaviour
 {
     #region Variaveis
 
-    [Header("Preview Proxima")]
-    public Transform posicaoPreview;
-    private GameObject pecaEmPreview;
+    [Header("Preview de Peças"), Tooltip("Uma lista contendo todas os previews de peças, coloque na mesma ordem dos prefabs de peças")]
+    public Image[] previewsPecas;
 
     [Header("Formatos de Peças"), Tooltip("Uma lista contendo todas as peças diferentes que você vai criar no editor")]
     public GameObject[] prefabsPecas;
@@ -84,33 +84,14 @@ public class GeradorDeBlocos : MonoBehaviour
 
     private void AtualizarPreviewVisual()
     {
-        // Se já existia uma peça flutuando no preview, deleta ela antes de criar a nova
-        if (pecaEmPreview != null)
+        //Oculta todas as pecas de preview
+        foreach (var preview in previewsPecas)
         {
-            Destroy(pecaEmPreview);
+            preview.gameObject.SetActive(false);
         }
 
-        if (posicaoPreview == null)
-        {
-            Debug.LogWarning("Por favor, configure o objeto 'posicaoPreview' no Inspector do Gerador.");
-            return;
-        }
-
-        // Cria a próxima peça exatamente na posição de preview configurada
-        pecaEmPreview = Instantiate(prefabsPecas[indiceProximaPeca], posicaoPreview.position, Quaternion.identity, posicaoPreview);
-
-
-        // MUITO IMPORTANTE: Desativa o script de queda dela para ela não cair e nem ler o teclado enquanto está no painel!
-        if (pecaEmPreview.TryGetComponent<PecaGrid>(out PecaGrid scriptPeca))
-        {
-            scriptPeca.enabled = false;
-        }
-
-        //Joga o preview dos blocos para frente, para não ficar atrás do painel de UI
-        foreach (var item in pecaEmPreview.GetComponentsInChildren<SpriteRenderer>())
-        {
-            item.sortingOrder = 10; // Coloca a peça de preview na frente de tudo
-        }
+        //Ativa apenas a peça de preview que será a próxima
+        previewsPecas[indiceProximaPeca].gameObject.SetActive(true);
     }
 
     public List<Transform> GetBlocosFilhos(GameObject peca)

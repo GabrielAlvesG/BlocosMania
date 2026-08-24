@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 0bd9c154cb291b44d950ae830c866c73
+guid: 70b20efbe9d44eb45a8290de88f87e13
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6799957144758474573
-    second: BlocoMania_Fundo_0
+      213: 3751654235469165025
+    second: Prev_T_0
+  - first:
+      213: -3049709426153823311
+    second: Prev_T_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +49,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -126,13 +129,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: BlocoMania_Fundo_0
+      name: Prev_T_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1080
-        height: 1920
+        x: 39
+        y: 84
+        width: 94
+        height: 33
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +144,30 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d475535defc4e5e50800000000000000
-      internalID: 6799957144758474573
+      spriteID: 1e1ba3966ad801430800000000000000
+      internalID: 3751654235469165025
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Prev_T_1
+      rect:
+        serializedVersion: 2
+        x: 69
+        y: 53
+        width: 33
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b3e0f95f614da5d0800000000000000
+      internalID: -3049709426153823311
       vertices: []
       indices: 
       edges: []
@@ -151,7 +176,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -161,7 +186,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      BlocoMania_Fundo_0: 6799957144758474573
+      Prev_T_0: 3751654235469165025
+      Prev_T_1: -3049709426153823311
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
