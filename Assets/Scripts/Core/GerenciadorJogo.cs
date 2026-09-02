@@ -1,3 +1,4 @@
+using Assets.Scripts.Core.Data.Repositorio;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -71,7 +72,6 @@ public class GerenciadorJogo : MonoBehaviour
 
     //Dados Permanentes (salvos no PlayerPrefs)
     private int moedasTotais = 0;
-    private int recordePontuacao = 0;
 
 
     // Tabela progressiva de custo da habilidade
@@ -98,7 +98,6 @@ public class GerenciadorJogo : MonoBehaviour
 
         // Carrega dados salvos do PlayerPrefs
         moedasTotais = PlayerPrefs.GetInt("MoedasSalvas", 0);
-        recordePontuacao = PlayerPrefs.GetInt("RecordeSalvo", 0);
     }
 
     void Start()
@@ -216,13 +215,11 @@ public class GerenciadorJogo : MonoBehaviour
         jogoAtivo = false;
         Time.timeScale = 0f; // Congela tempo
 
-        // VERIFICA SE BATEU O RECORDE DA HISTÓRIA DO JOGO
-        if (pontuacaoAtual > recordePontuacao)
-        {
-            recordePontuacao = pontuacaoAtual;
-            PlayerPrefs.SetInt("RecordeSalvo", recordePontuacao);
-            PlayerPrefs.Save();
+        //Salva a pontuação do jogador no arquivo de recordes
+        GerenciadorScore.AddScore("Player", pontuacaoAtual, tempoJogoTotal); // Salva a pontuação do jogador
 
+        if (pontuacaoAtual > GerenciadorScore.Recorde)
+        {
             if (GameOver_recorde != null) //Exibe que fez um novo record
                 GameOver_recorde.SetActive(true);
         }

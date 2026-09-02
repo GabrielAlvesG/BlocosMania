@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.Audio;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
+using UnityEngine.Audio;
 
 public class AudioController : MonoBehaviour
 {
@@ -17,18 +16,26 @@ public class AudioController : MonoBehaviour
 
     private void Start()
     {
-        if (mainMixer.GetFloat("MusicVol", out float dM))
-            musicSlider.value = Mathf.Pow(10, dM / 20);
 
-        if (mainMixer.GetFloat("SFXVol", out float dS))
-            sfxSlider.value = Mathf.Pow(10, dS / 20);
+        //Carrega os valores salvos no PlayerPrefs e aplica ao mixer
+        float musicVolume = PlayerPrefs.GetFloat("MusicVol", 1);
+        float sfxVolume = PlayerPrefs.GetFloat("SFXVol", 1);
 
-        // Vincula os Sliders às funções via código
-        musicSlider.onValueChanged.AddListener(SetMusicVolume);
-        sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+        SetMusicVolume(musicVolume);
+        SetSFXVolume(sfxVolume);
 
-        musicSlider.value = PlayerPrefs.GetFloat("MusicVol", 1);
-        sfxSlider.value = PlayerPrefs.GetFloat("SFXVol", 1);
+        //Aplica os valores aos sliders, se eles existirem
+        if (musicSlider)
+        {
+            musicSlider.value = musicVolume;
+            musicSlider.onValueChanged.AddListener(SetMusicVolume);
+        }
+
+        if (sfxSlider)
+        {
+            sfxSlider.value = sfxVolume;
+            sfxSlider.onValueChanged.AddListener(SetSFXVolume);
+        }
     }
 
     #endregion

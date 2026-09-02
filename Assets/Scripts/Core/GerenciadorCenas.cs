@@ -29,6 +29,7 @@ public class GerenciadorCenas : MonoBehaviour
     #region Funcoes
 
     public void CarregarMenu() => SceneManager.LoadScene("MenuPrincipal");
+    public void CarregarCadastro() => SceneManager.LoadScene("Identificacao");
     public void CarregarJogo() => SceneManager.LoadScene("GamePlay");
 
     public void RecarregarCenaAtual() => SceneManager.LoadScene(SceneManager.GetActiveScene().name);
