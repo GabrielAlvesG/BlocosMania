@@ -50,6 +50,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PecaGrid
   velocidadeQuedaRapida: 0.05
   intervaloVento: 1.2
+  OutPutGroup: {fileID: 6755335052772104593, guid: 962b1f61b71636045aa40379f132871b, type: 2}
+  audioClipVento: {fileID: 8300000, guid: 38df93ea587a7dc41bff2e4d700a7166, type: 3}
 --- !u!1 &4874590463358602342
 GameObject:
   m_ObjectHideFlags: 0

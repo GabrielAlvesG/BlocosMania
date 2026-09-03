@@ -1,8 +1,9 @@
-using Assets.Scripts.Core.Data.Repositorio;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+using Assets.Scripts.Core.Data.Repositorio;
+using Assets.Scripts.Core.Data.Cache;
 
 public class GerenciadorJogo : MonoBehaviour
 {
@@ -35,6 +36,7 @@ public class GerenciadorJogo : MonoBehaviour
 
     [Header("Game Over")]
     public GameObject painelGameover;
+    public TextMeshProUGUI GameOver_NomeJogador;
     public TextMeshProUGUI GameOver_textoPontuacao;
     public TextMeshProUGUI GameOver_textoNivel;
     public TextMeshProUGUI GameOver_textoTempoJogo;
@@ -63,16 +65,13 @@ public class GerenciadorJogo : MonoBehaviour
     private int nivelAtual = 1;
     private int pontuacaoAtual = 0;
     private float velocidadeGlobalAtual;
-    private float tempoJogoTotal;
+    private float tempoJogoTotal = 0;
+    private int moedasTotais = 0;
 
     //Niveis
     private float cronometroNivel;
     private float cronometroAtualizacaoUi;
     private const float IntervaloAtualizacaoUi = 0.25f;
-
-    //Dados Permanentes (salvos no PlayerPrefs)
-    private int moedasTotais = 0;
-
 
     // Tabela progressiva de custo da habilidade
     private int[] tabelaCustos = new int[] { 3, 5, 10, 15, 25, 40, 60, 90, 130, 200 };
@@ -94,10 +93,6 @@ public class GerenciadorJogo : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
-
-        // Carrega dados salvos do PlayerPrefs
-        moedasTotais = PlayerPrefs.GetInt("MoedasSalvas", 0);
     }
 
     void Start()
@@ -172,7 +167,7 @@ public class GerenciadorJogo : MonoBehaviour
         pontuacaoAtual = 0;
         nivelAtual = 1;
         cronometroNivel = 0f;
-        tempoJogoTotal = 0f;
+        tempoJogoTotal = -2f;
         cronometroAtualizacaoUi = 0f;
 
         velocidadeGlobalAtual = velocidadeInicial;
@@ -216,7 +211,7 @@ public class GerenciadorJogo : MonoBehaviour
         Time.timeScale = 0f; // Congela tempo
 
         //Salva a pontuação do jogador no arquivo de recordes
-        GerenciadorScore.AddScore("Player", pontuacaoAtual, tempoJogoTotal); // Salva a pontuação do jogador
+        GerenciadorScore.AddScore(GameSessionData.NomeJogador, pontuacaoAtual, tempoJogoTotal); // Salva a pontuação do jogador
 
         if (pontuacaoAtual > GerenciadorScore.Recorde)
         {
@@ -231,6 +226,7 @@ public class GerenciadorJogo : MonoBehaviour
             painelGameover.SetActive(true);
 
         //Carrega os textos finais de GameOver
+        if (GameOver_textoNivel != null) GameOver_NomeJogador.text = GameSessionData.NomeJogador;
 
         if (GameOver_textoNivel != null) GameOver_textoNivel.text = $"NÍVEL {nivelAtual}";
 
@@ -325,6 +321,9 @@ public class GerenciadorJogo : MonoBehaviour
 
     string FormatarTempo(float segundos)
     {
+        if (segundos <= 0)
+            segundos = 0;
+
         int minutos = Mathf.FloorToInt(segundos / 60f);
         int segs = Mathf.FloorToInt(segundos % 60f);
         return $"{minutos:D2}:{segs:D2}";
@@ -363,7 +362,7 @@ public class GerenciadorJogo : MonoBehaviour
 
     //---- Funcoes de Efeito de Vento ----//
 
-    public void AtualizarHUDVento(int direcao) //TODO: Trocar por um icone ou outra coisa
+    public void AtualizarHUDVento(int direcao)
     {
         if (imgVentoEsq == null || imgVentoDir == null) return;
 
@@ -389,10 +388,6 @@ public class GerenciadorJogo : MonoBehaviour
     public void AdicionarMoedas(int qtd)
     {
         moedasTotais += qtd;
-        // Salva imediatamente no dispositivo do jogador
-        PlayerPrefs.SetInt("MoedasSalvas", moedasTotais);
-        PlayerPrefs.Save();
-
         AtualizarInterfaceLoja();
     }
 
@@ -404,7 +399,7 @@ public class GerenciadorJogo : MonoBehaviour
         return 250; // Custo fixo máximo caso ele use mais de 10 vezes na mesma partida
     }
 
-    public void ComprarLimpezaDeLinha()//TODO ver se vamos deixar a ultima ou vamos escolher uma linha
+    public void ComprarLimpezaDeLinha()
     {
         if (!jogoAtivo || jogoPausado) return;
 
@@ -416,8 +411,6 @@ public class GerenciadorJogo : MonoBehaviour
         {
             // Cobra o jogador
             moedasTotais -= custoAtual;
-            PlayerPrefs.SetInt("MoedasSalvas", moedasTotais);
-            PlayerPrefs.Save();
 
             // Sobe o custo para a próxima compra (avança na tabela de custos)
             if (indiceCustoAtual < tabelaCustos.Length - 1)

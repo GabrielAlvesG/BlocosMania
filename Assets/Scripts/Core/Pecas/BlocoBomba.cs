@@ -10,28 +10,39 @@ public class BlocoBomba : MonoBehaviour
     private Coroutine rotinaPiscar;
 
     private Color corDeAlerta = new Color(2.0f, 0.0f, 0.0f, 1.0f);
-    private Color corOriginal;
+    private Color corOriginal = Color.white;
     private SpriteRenderer sr;
 
     public float tempoMinimoExplosao = 5.0f;
     public float tempoMaximoExplosao = 8.0f;
 
+    public AudioSource audioSource;
+    private AudioClip somAlerta;
+    public AudioClip somExplosao;
+
     #endregion
 
     #region Ciclo
 
-    void Awake()
+    private void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
-        if (sr != null)
+        if (audioSource == null)
         {
-            corOriginal = sr.color;
+            audioSource = GetComponent<AudioSource>();
         }
     }
 
     #endregion
 
-    #region Funcoes
+    #region Funcoes;
+
+    public void ConfigurarAudio(AudioClip alertaClip, AudioClip explosaoClip, AudioSource source)
+    {
+        this.somAlerta = alertaClip;
+        this.somExplosao = explosaoClip;
+        this.audioSource = source;
+    }
 
     public void AtivarBomba()
     {
@@ -66,6 +77,13 @@ public class BlocoBomba : MonoBehaviour
             {
                 // Alterna entre a cor original do sprite e a cor de alerta
                 sr.color = alternarCor ? corDeAlerta : corOriginal;
+
+                // Toca o som no momento em que pisca em vermelho
+                if (alternarCor && audioSource != null && somAlerta != null)
+                {
+                    audioSource.PlayOneShot(somAlerta);
+                }
+
                 alternarCor = !alternarCor;
             }
 
@@ -91,6 +109,11 @@ public class BlocoBomba : MonoBehaviour
         int minhaY = Mathf.FloorToInt(transform.position.y);
 
         Debug.Log($"💥 BOMBA EXPLODIU EM CRUZ EM: X:{minhaX}, Y:{minhaY}");
+
+        if (audioSource != null && somExplosao != null)
+        {
+            AudioUtils.TocarSomComMixer(somExplosao, transform.position, audioSource.outputAudioMixerGroup);
+        }
 
         // Definimos as 5 posições da Cruz: o centro (0,0), cima (0,1), baixo (0,-1), esquerda (-1,0) e direita (1,0)
         Vector2Int[] posicoesCruz = new Vector2Int[]

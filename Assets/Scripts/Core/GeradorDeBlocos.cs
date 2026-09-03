@@ -1,10 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 
 public class GeradorDeBlocos : MonoBehaviour
 {
     #region Variaveis
+
+    [Header("Audio Config")] 
+    public AudioMixerGroup OutPutGroup;
 
     [Header("Preview de Peças"), Tooltip("Uma lista contendo todas os previews de peças, coloque na mesma ordem dos prefabs de peças")]
     public Image[] previewsPecas;
@@ -15,12 +19,15 @@ public class GeradorDeBlocos : MonoBehaviour
     [Header("Configuração de Bombas")]
     [Range(0f, 100f), Tooltip("Porcentagem de chance de uma peça nascer contendo um bloco de bomba")]
     public float chanceDeBomba = 25f;
-    public Sprite SpriteBomba;
+    public Sprite SpriteBomba; 
+    public AudioClip somAlertaBomba;
+    public AudioClip somExplosaoBomba;
 
     [Header("Configuração do Bloco de Gelo")]
     [Range(0f, 100f), Tooltip("Porcentagem de chance de uma peça nascer contendo um bloco de gelo")]
     public float chanceDeBlocoGelo = 25f;
     public Sprite spriteGelo;
+    public AudioClip somColetaGelo;
 
     [Header("Configuração do Bloco de Vento")]
     [Range(0f, 100f), Tooltip("Porcentagem de chance de uma peça nascer contendo um bloco de vento")]
@@ -32,6 +39,7 @@ public class GeradorDeBlocos : MonoBehaviour
     [Range(0f, 100f), Tooltip("Porcentagem de chance de uma peça nascer contendo um bloco de moeda")]
     public float chanceDeBlocoMoeda = 25f;
     public Sprite spriteMoeda;
+    public AudioClip somColetaMoeda;
 
     private int indicePecaAtual = 0;
     private int indiceProximaPeca = 0;
@@ -74,9 +82,9 @@ public class GeradorDeBlocos : MonoBehaviour
 
         List<Transform> blocosFilhos = GetBlocosFilhos(novaPeca);
 
-        Sortear<BlocoDinheiro>(blocosFilhos, chanceDeBlocoMoeda, spriteMoeda);
-        Sortear<BlocoBomba>(blocosFilhos, chanceDeBomba, SpriteBomba);
-        Sortear<BlocoGelo>(blocosFilhos, chanceDeBlocoGelo, spriteGelo);
+        SortearDinheiro(blocosFilhos, chanceDeBlocoMoeda, spriteMoeda, somColetaMoeda);
+        SortearBomba(blocosFilhos, chanceDeBomba, SpriteBomba, somExplosaoBomba, somAlertaBomba);
+        SortearGelo(blocosFilhos, chanceDeBlocoGelo, spriteGelo, somColetaGelo);
         Sortear<BlocoVento>(blocosFilhos, chanceDeBlocoVento, spriteVentilador);
 
         AtualizarPreviewVisual();
@@ -131,6 +139,87 @@ public class GeradorDeBlocos : MonoBehaviour
                 }
 
                 blocosFilhos.Remove(blocosFilhos[filhoSorteado]); // Remove o bloco sorteado da lista para não sortear ele novamente
+            }
+        }
+    }
+
+    private void SortearDinheiro(List<Transform> blocosFilhos, float change, Sprite sprite, AudioClip clipColeta)
+    {
+        if (Random.Range(0f, 100f) <= change)
+        {
+            if (blocosFilhos.Count > 0)
+            {
+                int filhoSorteado = Random.Range(0, blocosFilhos.Count);
+                GameObject blocoAlvo = blocosFilhos[filhoSorteado].gameObject;
+
+                // Adiciona o componente BlocoDinheiro e configura o áudio
+                BlocoDinheiro dinheiro = blocoAlvo.AddComponent<BlocoDinheiro>();
+                dinheiro.ConfigurarAudio(clipColeta, OutPutGroup);
+
+                if (sprite != null)
+                {
+                    blocoAlvo.GetComponent<SpriteRenderer>().sprite = sprite;
+                    //blocoAlvo.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+
+                blocosFilhos.Remove(blocosFilhos[filhoSorteado]);
+            }
+        }
+    }
+
+    private void SortearBomba(List<Transform> blocosFilhos, float change, Sprite sprite,AudioClip clipExplosao, AudioClip clipAlerta)
+    {
+        if (Random.Range(0f, 100f) <= change)
+        {
+            if (blocosFilhos.Count > 0)
+            {
+                int filhoSorteado = Random.Range(0, blocosFilhos.Count);
+                GameObject blocoAlvo = blocosFilhos[filhoSorteado].gameObject;
+
+                // Garante que o objeto tenha o AudioSource
+                AudioSource audioSource = blocoAlvo.GetComponent<AudioSource>();
+                if (audioSource == null)
+                {
+                    audioSource = blocoAlvo.AddComponent<AudioSource>();
+                    audioSource.playOnAwake = false; // Desativa para não tocar ao carregar
+                    audioSource.outputAudioMixerGroup = OutPutGroup; // Configura para o grupo de SFX
+                }
+
+                // Adiciona o componente BlocoBomba e configura o áudio
+                BlocoBomba bomba = blocoAlvo.AddComponent<BlocoBomba>();
+                bomba.ConfigurarAudio(clipAlerta, clipExplosao, audioSource);
+
+                if (sprite != null)
+                {
+                    blocoAlvo.GetComponent<SpriteRenderer>().sprite = sprite;
+                    blocoAlvo.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+
+                blocosFilhos.Remove(blocosFilhos[filhoSorteado]);
+            }
+        }
+    }
+
+    private void SortearGelo(List<Transform> blocosFilhos, float change, Sprite sprite, AudioClip clipColeta)
+    {
+        if (Random.Range(0f, 100f) <= change)
+        {
+            if (blocosFilhos.Count > 0)
+            {
+                int filhoSorteado = Random.Range(0, blocosFilhos.Count);
+                GameObject blocoAlvo = blocosFilhos[filhoSorteado].gameObject;
+
+                // Adiciona o componente BlocoDinheiro e configura o áudio
+                BlocoGelo dinheiro = blocoAlvo.AddComponent<BlocoGelo>();
+                dinheiro.ConfigurarAudio(clipColeta, OutPutGroup);
+
+                if (sprite != null)
+                {
+                    blocoAlvo.GetComponent<SpriteRenderer>().sprite = sprite;
+                    blocoAlvo.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+
+                blocosFilhos.Remove(blocosFilhos[filhoSorteado]);
             }
         }
     }

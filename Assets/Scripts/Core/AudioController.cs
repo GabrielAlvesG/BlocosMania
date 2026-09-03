@@ -6,7 +6,7 @@ public class AudioController : MonoBehaviour
 {
     #region Variaveis 
 
-    [SerializeField] private AudioMixer mainMixer;
+    [SerializeField] public AudioMixer mainMixer;
     [SerializeField] private Slider musicSlider;
     [SerializeField] private Slider sfxSlider;
 
@@ -16,7 +16,6 @@ public class AudioController : MonoBehaviour
 
     private void Start()
     {
-
         //Carrega os valores salvos no PlayerPrefs e aplica ao mixer
         float musicVolume = PlayerPrefs.GetFloat("MusicVol", 1);
         float sfxVolume = PlayerPrefs.GetFloat("SFXVol", 1);
@@ -57,4 +56,25 @@ public class AudioController : MonoBehaviour
     }
 
     #endregion
+}
+
+public static class AudioUtils
+{
+    public static void TocarSomComMixer(AudioClip clip, Vector3 posicao, AudioMixerGroup canalMixer, float volume = 1f)
+    {
+        if (clip == null) return;
+
+        // Cria um objeto temporário só para o som na hierarquia
+        GameObject emissorTemp = new GameObject("TempSFX");
+        emissorTemp.transform.position = posicao;
+
+        AudioSource source = emissorTemp.AddComponent<AudioSource>();
+        source.clip = clip;
+        source.volume = volume;
+        source.outputAudioMixerGroup = canalMixer; // <--- ROTEADO PARA O CANAL SFX DO MIXER
+        source.Play();
+
+        // O próprio Unity destrói apenas o emissor temporário quando o som acaba
+        Object.Destroy(emissorTemp, clip.length);
+    }
 }

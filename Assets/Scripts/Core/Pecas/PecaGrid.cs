@@ -1,4 +1,6 @@
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.InputSystem;
 
 public class PecaGrid : MonoBehaviour
@@ -14,8 +16,12 @@ public class PecaGrid : MonoBehaviour
 
     [Header("Configuração de Vento")]
     public float intervaloVento = 1.2f; // A cada 1.2 segundos o vento empurra
+    public AudioMixerGroup OutPutGroup; // Grupo de mixer para efeitos sonoros
+    public AudioClip audioClipVento; // Som que será tocado quando o vento empurrar a peça
+
     private float tempoUltimoEmpurraoVento;
     private int direcaoDoVentoNestaPeca = 0; // 0 = Sem vento, -1 = Esquerda, 1 = Direita
+    private AudioSource audioSource; // Fonte de áudio para tocar o som de vento
 
     #endregion
 
@@ -99,6 +105,17 @@ public class PecaGrid : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        // Para o som de vento quando a peça é destruída
+        if (audioSource != null)
+        {
+            audioSource.Stop();
+            Destroy(audioSource);
+        }
+
+    }
+
     #endregion
 
     #region Funcoes
@@ -139,10 +156,21 @@ public class PecaGrid : MonoBehaviour
         {
             // Adota a direção que o bloco sorteou
             direcaoDoVentoNestaPeca = blocoDeVentoEncontrado.minhaDirecaoVento;
+
+            if (audioSource == null)
+            {
+                audioSource = transform.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false; // Desativa para não tocar ao carregar
+                audioSource.outputAudioMixerGroup = OutPutGroup; // Configura para o grupo de SFX
+            }
+
+            audioSource.loop = true; // Faz o som de vento tocar em loop enquanto a peça estiver ativa
+            audioSource.clip = audioClipVento; // Atribui o som do vento ao AudioSource
+            audioSource.Play();
         }
         else
         {
-            direcaoDoVentoNestaPeca = 0; // Peça comum, sem vento
+            direcaoDoVentoNestaPeca = 0; // Peça comum, sem vent
         }
 
         GerenciadorJogo.Instancia.AtualizarHUDVento(direcaoDoVentoNestaPeca);

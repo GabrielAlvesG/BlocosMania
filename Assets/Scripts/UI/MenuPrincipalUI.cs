@@ -18,7 +18,7 @@ public class MenuPrincipalUI : MonoBehaviour
     { 
         //TODO: Adicionar cena de configuracoes e recordes
 
-        BtnJogar.onClick.AddListener(() => GerenciadorCenas.Instancia.CarregarJogo());
+        BtnJogar.onClick.AddListener(() => GerenciadorCenas.Instancia.CarregarCadastro());
         BtnSair.onClick.AddListener(() => GerenciadorCenas.Instancia.Sair());
     }
 

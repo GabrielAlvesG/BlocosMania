@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GerenciadorGrid : MonoBehaviour
@@ -108,7 +107,6 @@ public class GerenciadorGrid : MonoBehaviour
         {
             if (grid[x, y] != null)
             {
-                AdicionarMoedas(grid[x, y]); // Adiciona moedas se o bloco for do tipo dinheiro
 
                 // Destrói o quadradinho visual no Unity
                 Destroy(grid[x, y].gameObject);
@@ -120,14 +118,24 @@ public class GerenciadorGrid : MonoBehaviour
 
     private static void EsconderLinhaVisualmente(int y)
     {
-        //TODO: Adicionar animação para os blocos sumirem, por enquanto apenas desativa o GameObject
-        // Deixa os blocos invisíveis temporariamente
         for (int x = 0; x < largura; x++)
         {
             if (grid[x, y] != null)
             {
+                DesativarSpriteRenderer(grid[x, y]);// Deixa os blocos invisíveis temporariamente
+                AtivarSeForGelo(grid[x, y]); // Se for gelo, ativa a gelo (lentidão temporária do jogo)
+                AdicionarMoedas(grid[x, y]); // Adiciona moedas se o bloco for do tipo dinheiro
+
                 grid[x, y].gameObject.SetActive(false);
             }
+        }
+    }
+
+    private static void DesativarSpriteRenderer(Transform bloco)
+    {
+        if (bloco.TryGetComponent<SpriteRenderer>(out SpriteRenderer sr))
+        {
+            sr.enabled = false;
         }
     }
 
@@ -173,7 +181,6 @@ public class GerenciadorGrid : MonoBehaviour
 
                     AtivarSeForBomba(grid[x, y - 1]); // Se for bomba, ativa a explosão
 
-                    AtivarSeForGelo(grid[x, y - 1]); // Se for gelo, ativa a gelo (lentidão temporária do jogo)
                 }
             }
         }
@@ -365,4 +372,3 @@ public class GerenciadorGrid : MonoBehaviour
 
     #endregion
 }
-
